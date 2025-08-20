@@ -1,7 +1,8 @@
 import pygame 
 
 
-pygame.init
+pygame.init()
+pygame.mixer.init()
 width, height = 500,750
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Spaceshooter")
@@ -9,8 +10,13 @@ player=[]
 for i in range(3):
     img= pygame.image.load(f"images/ship_{i}.png")
     player.append(img)
+bulletSound = pygame.mixer.Sound("sounds/laser.mp3")
 speed = 8
+bulletSpeed=10
+bullets=[]
+bulletFired=False
 x,y=width/2,height*(2/3)
+player_width=player[0].get_rect().size[0]
 clock = pygame.time.Clock()
 frame=0
 running = True
@@ -18,8 +24,18 @@ w_pressed=False
 s_pressed=False
 a_pressed=False
 d_pressed=False
+class bullet:
+    def __init__(self,x,y,speed):
+        self.x=x
+        self.y=y
+        self.speed=speed
+    def move(self):
+        self.y-=self.speed
+    def draw(self):
+        pygame.draw.rect(screen, (255, 0, 0), (self.x, self.y, 5, 10))
 
 while running:
+    screen.fill((100,100,100))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -40,7 +56,7 @@ while running:
             elif event.key == pygame.K_a:
                 a_pressed = True
             elif event.key == pygame.K_SPACE:
-                projectile_fired = True
+                bulletFired = True
 
         
         elif event.type == pygame.KEYUP:
@@ -62,11 +78,21 @@ while running:
         x+=speed
     if a_pressed:
         x-=speed
+    if bulletFired:
+        bulletSound.play()
+        bullets.append(bullet(x+player_width/2,y,bulletSpeed))
+        bulletFired=False
+
+    for element in bullets:
+        element.move()
+        element.draw()
+        
+
     
 
 
 
-    screen.fill((100,100,100))
+  
     r=int(frame/4)%3
     screen.blit(player[r],(x,y))
     pygame.display.flip()
